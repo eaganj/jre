@@ -152,3 +152,21 @@ def cropRectToFitInRect(src, dst):
     dw, dh = dst[1]
     w, h = min(sw, dw), min(sh, dh)
     return ((src[0][0], src[0][1]), (w, h))
+
+try:
+    from Foundation import NSIntersectsRect
+except ImportError:
+    print "Warning: rectIntersectsRect not implemented in jre.geom"
+def rectIntersectsRect(r1, r2):
+    '''
+    Find if two rectangles intersect.
+    '''
+    return NSIntersectsRect(r1, r2)
+    # TODO:
+    # NSIntersectsRect(NSRect aRect, NSRect bRect)
+    # {
+    #   /* Note that intersecting at a line or a point doesn't count */
+    #   return (NSMaxX(aRect) <= NSMinX(bRect)
+    #           || NSMaxX(bRect) <= NSMinX(aRect)
+    #               || NSMaxY(aRect) <= NSMinY(bRect)
+    #               || NSMaxY(bRect) <= NSMinY(aRect)) ? NO : YES;
