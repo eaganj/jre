@@ -5,6 +5,12 @@
 
 
 import math
+from compat import namedtuple
+
+Point = namedtuple('Point', 'x y')
+Size = namedtuple('Size', 'width height')
+Rect = namedtuple('Rect', 'origin size')
+MakeRect = lambda x, y, w, h: Rect(Point(x, y), Size(w, h))
 
 def distSq(a, b):
     '''
@@ -27,7 +33,7 @@ def delta(a, b):
     '''
     ax, ay = a
     bx, by = b
-    return (bx - ax, by - ay)
+    return Point(bx - ax, by - ay)
 
 def distPointLineSq(p, a, b):
     '''
@@ -105,7 +111,8 @@ def centerRectInRect(inner, outer):
     ((ix, iy), (iw, ih)) = inner
     ((ox, oy), (ow, oh)) = outer
 
-    return (((ox + (ow - iw) / 2), (oy + (oh - ih) / 2)), (iw, ih))
+    #return (((ox + (ow - iw) / 2), (oy + (oh - ih) / 2)), (iw, ih))
+    return MakeRect(ox + (ow -iw) / 2, oy + (oh - ih) / 2, iw, ih)
 
 def isPointInRect(point, rect):
     rx1, ry1 = rect[0]
@@ -151,8 +158,11 @@ def cropRectToFitInRect(src, dst):
     sw, sh = src[1]
     dw, dh = dst[1]
     w, h = min(sw, dw), min(sh, dh)
-    return ((src[0][0], src[0][1]), (w, h))
+    # return ((src[0][0], src[0][1]), (w, h))
+    return MakeRect(src[0][0], src[0][1], w, h)
 
+
+#### FIXME: !!!
 try:
     from Foundation import NSIntersectsRect
 except ImportError:
@@ -162,7 +172,7 @@ def rectIntersectsRect(r1, r2):
     Find if two rectangles intersect.
     '''
     return NSIntersectsRect(r1, r2)
-    # TODO:
+    # TODO: (code below from GNUstep)
     # NSIntersectsRect(NSRect aRect, NSRect bRect)
     # {
     #   /* Note that intersecting at a line or a point doesn't count */
@@ -170,3 +180,76 @@ def rectIntersectsRect(r1, r2):
     #           || NSMaxX(bRect) <= NSMinX(aRect)
     #               || NSMaxY(aRect) <= NSMinY(bRect)
     #               || NSMaxY(bRect) <= NSMinY(aRect)) ? NO : YES;
+
+### TODO: Implement rectIntersectionWithRect:
+# Code below from GNUstep
+# NSIntersectionRect (NSRect aRect, NSRect bRect)
+# {
+#   if (NSMaxX(aRect) <= NSMinX(bRect) || NSMaxX(bRect) <= NSMinX(aRect)
+#     || NSMaxY(aRect) <= NSMinY(bRect) || NSMaxY(bRect) <= NSMinY(aRect)) 
+#     {
+#       return NSMakeRect(0.0, 0.0, 0.0, 0.0);
+#     }
+#   else
+#     {
+#       NSRect    rect;
+# 
+#       if (NSMinX(aRect) <= NSMinX(bRect))
+#         rect.origin.x = bRect.origin.x;
+#       else
+#         rect.origin.x = aRect.origin.x;
+# 
+#       if (NSMinY(aRect) <= NSMinY(bRect))
+#         rect.origin.y = bRect.origin.y;
+#       else
+#         rect.origin.y = aRect.origin.y;
+# 
+#       if (NSMaxX(aRect) >= NSMaxX(bRect))
+#         rect.size.width = NSMaxX(bRect) - rect.origin.x;
+#       else
+#         rect.size.width = NSMaxX(aRect) - rect.origin.x;
+# 
+#       if (NSMaxY(aRect) >= NSMaxY(bRect))
+#         rect.size.height = NSMaxY(bRect) - rect.origin.y;
+#       else
+#         rect.size.height = NSMaxY(aRect) - rect.origin.y;
+# 
+#       return rect;
+#     }
+# }
+
+def rectIntersectsRectWithRotation(normal, rotated, degrees):
+    '''
+    Find if an unrotated rectangle intersects a rotated rectangle.  Rotation is expressed in degrees.
+    
+    Adapted from Clemens Klokmose.
+    '''
+    (nx, ny), (nw, nh) = normal
+    (rx, ry), (rw, rh) = rotated
+    
+    pivot = (rx + rw/2, ry + rh/2)
+    blx,bly = rotatePointAroundPoint((rx, ry), pivot, degrees)
+    tlx,tly = rotatePointAroundPoint((rx, ry+rh), pivot, degrees)
+    trx,tr_y = rotatePointAroundPoint((rx+rw, ry+rh), pivot, degrees)
+    brx,bry = rotatePointAroundPoint((rx+rw, ry), pivot, degrees)
+    
+    x = min(blx, tlx, trx, brx)
+    y = min(bly, tly, tr_y, bry)
+    w = max(blx, tlx, trx, brx) - x
+    h = max(bly, tly, tr_y, bry) - y
+    
+    newRect = (x, y), (w, h)
+    return rectIntersectsRect(normal, newRect)
+
+def rotatePointAroundPoint(point, pivot, degrees):
+    '''
+    Calculate the position of a point rotated around a pivot by a number of degrees.
+    
+    Adapted from Clemens Klokmose.
+    '''
+    rad = math.radians(degrees)
+    x, y = point
+    px, py = pivot
+    dx, dy = delta(pivot, point)
+    return Point((math.cos(rad) * x - math.sin(rad) * y) + ax, 
+                 (math.sin(rad) * x + math.cos(rad) * y) + ay)
