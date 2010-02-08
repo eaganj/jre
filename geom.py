@@ -251,13 +251,13 @@ def rotatePointAroundPoint(point, pivot, degrees):
     x, y = point
     px, py = pivot
     dx, dy = delta(pivot, point)
-    return Point((math.cos(rad) * x - math.sin(rad) * y) + ax, 
-                 (math.sin(rad) * x + math.cos(rad) * y) + ay)
+    return Point((math.cos(rad) * dx - math.sin(rad) * dy) + px, 
+                 (math.sin(rad) * dx + math.cos(rad) * dy) + py)
 
 def rotateRectAroundPoint(rect, pivot, degrees):
     '''
     Calculate the rect resulting from rotating by a number of degrees around a pivot.
     '''
     origin, size = rect
-    rotatedOrigin = rotatePointAroundPoint(pivot)
+    rotatedOrigin = rotatePointAroundPoint(origin, pivot, degrees)
     return Rect(rotatedOrigin, size)
