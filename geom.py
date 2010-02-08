@@ -222,7 +222,7 @@ def rectIntersectsRectWithRotation(normal, rotated, degrees):
     '''
     Find if an unrotated rectangle intersects a rotated rectangle.  Rotation is expressed in degrees.
     
-    Adapted from Clemens Klokmose.
+    Code translated from Clemens Klokmose.  Bugs introduced by me.
     '''
     (nx, ny), (nw, nh) = normal
     (rx, ry), (rw, rh) = rotated
@@ -245,7 +245,7 @@ def rotatePointAroundPoint(point, pivot, degrees):
     '''
     Calculate the position of a point rotated around a pivot by a number of degrees.
     
-    Adapted from Clemens Klokmose.
+    Code translated from Clemens Klokmose.  Bugs introduced by me.
     '''
     rad = math.radians(degrees)
     x, y = point
@@ -253,3 +253,11 @@ def rotatePointAroundPoint(point, pivot, degrees):
     dx, dy = delta(pivot, point)
     return Point((math.cos(rad) * x - math.sin(rad) * y) + ax, 
                  (math.sin(rad) * x + math.cos(rad) * y) + ay)
+
+def rotateRectAroundPoint(rect, pivot, degrees):
+    '''
+    Calculate the rect resulting from rotating by a number of degrees around a pivot.
+    '''
+    origin, size = rect
+    rotatedOrigin = rotatePointAroundPoint(pivot)
+    return Rect(rotatedOrigin, size)

@@ -234,6 +234,7 @@ class NSAutoreleasePool(objc.Category(NSAutoreleasePool)):
     def __enter__(self):
             return self
     def __exit__(self, ext, exv, extb):
+            del self
             return False
 
 @contextmanager
