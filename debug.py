@@ -1,6 +1,7 @@
 # Misc debugging utility functions
 # Copyright (C) 2003-2009 James R. Eagan <eaganjr@acm.org>
 
+import code
 import sys
 import traceback
 
@@ -159,3 +160,12 @@ def printStackTrace(message=''):
         sys.stderr.write('\n')
         
     traceback.print_exception(*sys.exc_info())
+
+def interact():
+    f = sys._getframe(1)
+    banner = u'Python %s\n' \
+             u'Type "help", "copyright", "credits" or "license" for more information.\n' \
+             u'In %s line %s at %s\n' \
+             u'Locals: %s' % (sys.version, f.f_code.co_filename, f.f_lineno,
+                              f.f_code.co_name, u', '.join(f.f_locals.keys()))
+    code.interact(banner, local=f.f_locals)
