@@ -248,6 +248,15 @@ class NSView(objc.Category(NSView)):
         superview = self.superview()
         return superview.convertRectToBase_(rect) if superview else self.convertRectToBase_(rect)
 
+class NSEvent(objc.Category(NSEvent)):
+    def locationInScreen(self):
+        ewindow = self.window()
+        wlocation = self.locationInWindow()
+        if ewindow:
+            return ewindow.convertBaseToScreen_(wlocation)
+        else:
+            return wlocation
+
 ### Include submodules
 import image
 import prefs
