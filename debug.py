@@ -168,4 +168,7 @@ def interact():
              u'In %s line %s at %s\n' \
              u'Locals: %s' % (sys.version, f.f_code.co_filename, f.f_lineno,
                               f.f_code.co_name, u', '.join(f.f_locals.keys()))
-    code.interact(banner, local=f.f_locals)
+    scope = {}
+    scope.update(f.f_globals)
+    scope.update(f.f_locals)
+    code.interact(banner, local=scope)
