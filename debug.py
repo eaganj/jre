@@ -70,8 +70,9 @@ def trap_exceptions_any(func):
         try:
             return func(self, *args, **kwargs)
         except:
-            sys.stderr.write('Exception in %s: ' % (func.__name__))
-            traceback.print_exception(*sys.exc_info())
+            sys.stderr.write(u'Trapped exception in %s: ' % (func.__name__))
+            et, ev, tb = sys.exc_info()
+            sys.stderr.write(''.join(traceback.format_exception(et, ev, tb.tb_next)))
     return trapper
 
 def trap_exceptions_func0(func):
@@ -80,8 +81,9 @@ def trap_exceptions_func0(func):
         try:
             return func()
         except:
-            sys.stderr.write('Exception in %s: ' % (func.__name__))
-            traceback.print_exception(*sys.exc_info())
+            sys.stderr.write(u'Trapped exception in %s: ' % (func.__name__))
+            et, ev, tb = sys.exc_info()
+            sys.stderr.write(''.join(traceback.format_exception(et, ev, tb.tb_next)))
     return trapperf0
     
 def trap_exceptions0(func):
@@ -90,8 +92,9 @@ def trap_exceptions0(func):
         try:
             return func(self)
         except:
-            sys.stderr.write(u'Exception in %s: ' % (func.__name__))
-            traceback.print_exception(*sys.exc_info())
+            sys.stderr.write(u'Trapped exception in %s: ' % (func.__name__))
+            et, ev, tb = sys.exc_info()
+            sys.stderr.write(''.join(traceback.format_exception(et, ev, tb.tb_next)))
     return trapper0
 
 def trap_exceptions1(func):
@@ -100,8 +103,9 @@ def trap_exceptions1(func):
         try:
             return func(self, arg)
         except:
-            sys.stderr.write(u'Exception in %s: ' % (func.__name__))
-            traceback.print_exception(*sys.exc_info())
+            sys.stderr.write(u'Trapped exception in %s: ' % (func.__name__))
+            et, ev, tb = sys.exc_info()
+            sys.stderr.write(''.join(traceback.format_exception(et, ev, tb.tb_next)))
     return trapper_
 
 def trap_exceptions2(func):
@@ -110,8 +114,9 @@ def trap_exceptions2(func):
         try:
             return func(self, arg1, arg2)
         except:
-            sys.stderr.write(u'Exception in %s: ' % (func.__name__))
-            traceback.print_exception(*sys.exc_info())
+            sys.stderr.write(u'Trapped exception in %s: ' % (func.__name__))
+            et, ev, tb = sys.exc_info()
+            sys.stderr.write(''.join(traceback.format_exception(et, ev, tb.tb_next)))
     return trapper_two_
 
 def trap_exceptions3(func):
@@ -120,8 +125,9 @@ def trap_exceptions3(func):
         try:
             return func(self, arg1, arg2, arg3)
         except:
-            sys.stderr.write(u'Exception in %s: ' % (func.__name__))
-            traceback.print_exception(*sys.exc_info())
+            sys.stderr.write(u'Trapped exception in %s: ' % (func.__name__))
+            et, ev, tb = sys.exc_info()
+            sys.stderr.write(''.join(traceback.format_exception(et, ev, tb.tb_next)))
     return trapper_two_three_
 
 def trap_exceptions4(func):
@@ -130,8 +136,9 @@ def trap_exceptions4(func):
         try:
             return func(self, arg1, arg2, arg3, arg4)
         except:
-            sys.stderr.write(u'Exception in %s: ' % (func.__name__))
-            traceback.print_exception(*sys.exc_info())
+            sys.stderr.write(u'Trapped exception in %s: ' % (func.__name__))
+            et, ev, tb = sys.exc_info()
+            sys.stderr.write(''.join(traceback.format_exception(et, ev, tb.tb_next)))
     return trapper_two_three_four_
 
 def trap_exceptions5(func):
@@ -140,8 +147,9 @@ def trap_exceptions5(func):
         try:
             return func(self, arg1, arg2, arg3, arg4, arg5)
         except:
-            sys.stderr.write(u'Exception in %s: ' % (func.__name__))
-            traceback.print_exception(*sys.exc_info())
+            sys.stderr.write(u'Trapped exception in %s: ' % (func.__name__))
+            et, ev, tb = sys.exc_info()
+            sys.stderr.write(''.join(traceback.format_exception(et, ev, tb.tb_next)))
     return trapper_two_three_four_five_
 
 trap_exceptions_map = { 0: trap_exceptions_func0,
