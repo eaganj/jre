@@ -1,6 +1,10 @@
 # Ordered Dictionary extracted from Python 2.7b2's collections.py so I can use it in Python 2.6 :-D
 
-from _abcoll import MutableMapping
+try:
+    from _abcoll import MutableMapping
+except ImportError:
+    pass
+    
 
 class OrderedDict(dict, MutableMapping):
     'Dictionary that remembers insertion order'

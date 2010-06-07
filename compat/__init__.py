@@ -6,6 +6,6 @@ except ImportError:
 try:
     from collections import OrderedDict
 except ImportError:
-    from odict import OrderedDict
+    from odict2 import OrderedDict
 
 __all__ = 'namedtuple OrderedDict'.split()
