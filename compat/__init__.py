@@ -3,4 +3,9 @@ try:
 except ImportError:
     from namedtuple import namedtuple
 
-__all__ = 'namedtuple'.split()
+try:
+    from collections import OrderedDict
+except ImportError:
+    from odict import OrderedDict
+
+__all__ = 'namedtuple OrderedDict'.split()
