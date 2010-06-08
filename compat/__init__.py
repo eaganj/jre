@@ -8,4 +8,6 @@ try:
 except ImportError:
     from odict2 import OrderedDict
 
-__all__ = 'namedtuple OrderedDict'.split()
+from ConfigParser26 import ConfigParser as ConfigParser26
+
+__all__ = 'namedtuple OrderedDict ConfigParser26'.split()
