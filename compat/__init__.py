@@ -9,5 +9,6 @@ except ImportError:
     from odict2 import OrderedDict
 
 import ConfigParser26
+import subprocess26
 
-__all__ = 'namedtuple OrderedDict ConfigParser26'.split()
+__all__ = 'namedtuple OrderedDict ConfigParser26 subprocess26'.split()
