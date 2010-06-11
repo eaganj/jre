@@ -5,6 +5,9 @@ from __future__ import with_statement
 
 from AppKit import *
 from Foundation import *
+from Quartz import *
+from Quartz.QuartzCore import *
+import PyObjCTools.AppHelper
 import objc
 
 from contextlib import contextmanager
@@ -229,6 +232,45 @@ def swizzleMethod(old):
     
     return swizzleWithNewMethod_
 
+
+def runOnMainThread(f):
+    spec = inspect.getargspec(f)
+    formalArgs = spec[0]
+    defaults = spec[3] if spec[3] else []
+    underscores = '_' * max(len(formalArgs) - 1 - f.__name__.count('_'), 0)
+    firstKeyword = len(formalArgs) - len(defaults)
+    kwargs = [ '%s=%s' % (formalArgs[firstKeyword + i], default) for i, default in enumerate(defaults) ]
+    kwargs = ', '.join(kwargs)
+    args = ', '.join(formalArgs[:firstKeyword])
+    allArgs = ', '.join(formalArgs)
+    methodName = 'mainThreadHelper%s%s' % (f.__name__, underscores)
+    code = '''\
+def %(methodName)s(%(args)s, %(kwargs)s):
+    _callOnMainThread__(_helperFunc__, (%(allArgs)s))
+''' % (locals())
+    # print code
+    
+    @wraps(f)
+    def curry(args):
+        f(*args)
+        
+    namespace = dict(_helperFunc__=curry, _callOnMainThread__=PyObjCTools.AppHelper.callAfter)
+    exec code in namespace
+    result = namespace[methodName]
+    result.__name__ = f.__name__
+    return result
+
+# @runOnMainThread
+# def foo(self, a, b, c=1):
+#     pass
+# 
+# @runOnMainThread
+# def foo_b_c(self, a, b, c):
+#     pass
+
+    
+        
+
 # Add context manager methods to NSAutoreleasePool as a category hack
 class NSAutoreleasePool(objc.Category(NSAutoreleasePool)):
     def __enter__(self):
@@ -256,6 +298,42 @@ class NSEvent(objc.Category(NSEvent)):
             return ewindow.convertBaseToScreen_(wlocation)
         else:
             return wlocation
+
+class NSBezierPath(objc.Category(NSBezierPath)):
+    def quartzPath(self):
+        ''' 
+        Source: <http://developer.apple.com/mac/library/documentation/Cocoa/Conceptual/
+                        CocoaDrawingGuide/Paths/Paths.html>
+        '''
+        immutablePath = None
+        numElements = self.elementCount()
+        if numElements > 0:
+            path = CGPathCreateMutable()
+            didClosePath = True
+
+            for i in range(numElements):
+                elementType, points = self.elementAtIndex_associatedPoints_(i)
+
+                if elementType == NSMoveToBezierPathElement:
+                    CGPathMoveToPoint(path, None, points[0].x, points[0].y)
+                elif elementType == NSLineToBezierPathElement:
+                    CGPathAddLineToPoint(path, None, points[0].x, points[0].y)
+                    didClosePath = False
+                elif elementType == NSCurveToBezierPathElement:
+                    CGPathAddCurveToPoint(path, None, points[0].x, points[0].y,
+                                          points[1].x, points[1].y,
+                                          points[2].x, points[2].y)
+                    didClosePath = False
+                elif elementType == NSClosePathBezierPathElement:
+                    CGPathCloseSubpath(path)
+                    didClosePath = True
+
+            if not didClosePath:
+                CGPathCloseSubpath(path)
+
+            immutablePath = CGPathCreateCopy(path)
+
+        return immutablePath
 
 ### Include submodules
 import image
