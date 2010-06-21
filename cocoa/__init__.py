@@ -5,8 +5,6 @@ from __future__ import with_statement
 
 from AppKit import *
 from Foundation import *
-from Quartz import *
-from Quartz.QuartzCore import *
 import PyObjCTools.AppHelper
 import objc
 
@@ -299,41 +297,47 @@ class NSEvent(objc.Category(NSEvent)):
         else:
             return wlocation
 
-class NSBezierPath(objc.Category(NSBezierPath)):
-    def quartzPath(self):
-        ''' 
-        Source: <http://developer.apple.com/mac/library/documentation/Cocoa/Conceptual/
-                        CocoaDrawingGuide/Paths/Paths.html>
-        '''
-        immutablePath = None
-        numElements = self.elementCount()
-        if numElements > 0:
-            path = CGPathCreateMutable()
-            didClosePath = True
+try:
+    from Quartz import *
+    from Quartz.QuartzCore import *
+    
+    class NSBezierPath(objc.Category(NSBezierPath)):
+        def quartzPath(self):
+            ''' 
+            Source: <http://developer.apple.com/mac/library/documentation/Cocoa/Conceptual/
+                            CocoaDrawingGuide/Paths/Paths.html>
+            '''
+            immutablePath = None
+            numElements = self.elementCount()
+            if numElements > 0:
+                path = CGPathCreateMutable()
+                didClosePath = True
 
-            for i in range(numElements):
-                elementType, points = self.elementAtIndex_associatedPoints_(i)
+                for i in range(numElements):
+                    elementType, points = self.elementAtIndex_associatedPoints_(i)
 
-                if elementType == NSMoveToBezierPathElement:
-                    CGPathMoveToPoint(path, None, points[0].x, points[0].y)
-                elif elementType == NSLineToBezierPathElement:
-                    CGPathAddLineToPoint(path, None, points[0].x, points[0].y)
-                    didClosePath = False
-                elif elementType == NSCurveToBezierPathElement:
-                    CGPathAddCurveToPoint(path, None, points[0].x, points[0].y,
-                                          points[1].x, points[1].y,
-                                          points[2].x, points[2].y)
-                    didClosePath = False
-                elif elementType == NSClosePathBezierPathElement:
+                    if elementType == NSMoveToBezierPathElement:
+                        CGPathMoveToPoint(path, None, points[0].x, points[0].y)
+                    elif elementType == NSLineToBezierPathElement:
+                        CGPathAddLineToPoint(path, None, points[0].x, points[0].y)
+                        didClosePath = False
+                    elif elementType == NSCurveToBezierPathElement:
+                        CGPathAddCurveToPoint(path, None, points[0].x, points[0].y,
+                                              points[1].x, points[1].y,
+                                              points[2].x, points[2].y)
+                        didClosePath = False
+                    elif elementType == NSClosePathBezierPathElement:
+                        CGPathCloseSubpath(path)
+                        didClosePath = True
+
+                if not didClosePath:
                     CGPathCloseSubpath(path)
-                    didClosePath = True
 
-            if not didClosePath:
-                CGPathCloseSubpath(path)
+                immutablePath = CGPathCreateCopy(path)
 
-            immutablePath = CGPathCreateCopy(path)
-
-        return immutablePath
+            return immutablePath
+except ImportError:
+    pass
 
 ### Include submodules
 import image
