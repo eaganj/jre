@@ -231,7 +231,44 @@ def swizzleMethod(old):
     return swizzleWithNewMethod_
 
 
+
+## JREObjCAppHelperCaller and callAfterBlocking slightly modified from PyObjCTools.AppHelper
+class JREObjCAppHelperCaller(NSObject):
+    def initWithArgs_(self, args):
+        self = self.init()
+        self.args = args
+        return self
+
+    def callAfter_(self, sender):
+        self.performSelectorOnMainThread_withObject_waitUntilDone_(
+            self.call_, self.args, False)
+    
+    def callAfterBlocking_(self, sender):
+        self.performSelectorOnMainThread_withObject_waitUntilDone_(
+            self.call_, self.args, True)
+
+    def callLater_(self, delay):
+        self.performSelector_withObject_afterDelay_(
+            self.callAfter_, None, delay)
+
+    def call_(self, (func, args, kwargs)):
+        func(*args, **kwargs)
+
+def callAfterBlocking(func, *args, **kwargs):
+    """call a function on the main thread (sync)"""
+    pool = NSAutoreleasePool.alloc().init()
+    obj = JREObjCAppHelperCaller.alloc().initWithArgs_((func, args, kwargs))
+    obj.callAfterBlocking_(None)
+    del obj
+    del pool
+    
 def runOnMainThread(f):
+    return scheduleFunction_onMainThreadWithScheduler_(f, callAfterBlocking)
+
+def runInBackgroundOnMainThread(f):
+    return scheduleFunction_onMainThreadWithScheduler_(f, PyObjCTools.AppHelper.callAfter)
+
+def scheduleFunction_onMainThreadWithScheduler_(f, scheduler):
     spec = inspect.getargspec(f)
     formalArgs = spec[0]
     defaults = spec[3] if spec[3] else []
@@ -252,22 +289,11 @@ def %(methodName)s(%(args)s, %(kwargs)s):
     def curry(args):
         f(*args)
         
-    namespace = dict(_helperFunc__=curry, _callOnMainThread__=PyObjCTools.AppHelper.callAfter)
+    namespace = dict(_helperFunc__=curry, _callOnMainThread__=scheduler)
     exec code in namespace
     result = namespace[methodName]
     result.__name__ = f.__name__
     return result
-
-# @runOnMainThread
-# def foo(self, a, b, c=1):
-#     pass
-# 
-# @runOnMainThread
-# def foo_b_c(self, a, b, c):
-#     pass
-
-    
-        
 
 # Add context manager methods to NSAutoreleasePool as a category hack
 class NSAutoreleasePool(objc.Category(NSAutoreleasePool)):
