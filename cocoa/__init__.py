@@ -362,8 +362,16 @@ try:
                 immutablePath = CGPathCreateCopy(path)
 
             return immutablePath
+    
+    class NSColor(objc.Category(NSColor)):
+        def quartzColor(self):
+            deviceColor = self.colorUsingColorSpaceName_(NSDeviceRGBColorSpace)
+            return CGColorCreate(CGColorSpaceCreateDeviceRGB(), 
+                                 deviceColor.getRed_green_blue_alpha_(None, None, None, None))
+            
 except ImportError:
     pass
+
 
 ### Include submodules
 import image
