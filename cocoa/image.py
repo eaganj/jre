@@ -69,3 +69,60 @@ def makeImageThumbnail(image, width=200, height=200):
         thumb.unlockFocus()
     
     return thumb
+
+# if 'CGImageForProposedRect_context_hints_' not in NSImage.__dict__:
+if True:
+    class NSImage(objc.Category(NSImage)):
+        def jreCGImageForProposedRect_context_hints_(self, rect, context, hints):
+            import Quartz
+
+            imageSize = self.size()
+
+            if not rect or not (rect[0][0] or rect[0][1] or rect[1][0] or rect[1][1]):
+                rect = NSMakeRect(0, 0, imageSize.width, imageSize.height)
+
+            # bitmapContext = Quartz.CGBitmapContextCreate(None, imageSize.width, imageSize.height, 8, 0, NSColorSpace.genericRGBColorSpace().CGColorSpace(), Quartz.kCGBitmapByteOrder32Host|Quartz.kCGImageAlphaPremultipliedFirst)
+            bitmapContext = Quartz.CGBitmapContextCreate(None, rect[1][0], rect[1][1], 8, 0, NSColorSpace.genericRGBColorSpace().CGColorSpace(), Quartz.kCGBitmapByteOrder32Host|Quartz.kCGImageAlphaPremultipliedFirst)
+
+            NSGraphicsContext.saveGraphicsState()
+            try:
+                NSGraphicsContext.setCurrentContext_(
+                        NSGraphicsContext.graphicsContextWithGraphicsPort_flipped_(bitmapContext, False))
+                self.drawInRect_fromRect_operation_fraction_(NSMakeRect(0, 0, rect[1][0], rect[1][1]),
+                                                             NSZeroRect,
+                                                             NSCompositeCopy,
+                                                             1.0)
+            finally:
+                NSGraphicsContext.restoreGraphicsState()
+
+            cgImage = Quartz.CGBitmapContextCreateImage(bitmapContext)
+            return cgImage
+
+if True:
+    class NSImageRep(objc.Category(NSImageRep)):
+        def jreCGImageForProposedRect_context_hints_(self, rect, bitmapContext, hints):
+            import Quartz
+
+            if not rect or not (rect[0][0] or rect[0][1] or rect[1][0] or rect[1][1]):
+                rect = NSMakeRect(0, 0, self.pixelsWide(), self.pixelsHigh())
+
+            if bitmapContext is None:
+                bitmapContext = Quartz.CGBitmapContextCreate(
+                                    None, rect[1][0], rect[1][1], 8, 0,
+                                    NSColorSpace.genericRGBColorSpace().CGColorSpace(),
+                                    Quartz.kCGBitmapByteOrder32Host|Quartz.kCGImageAlphaPremultipliedFirst)
+
+            NSGraphicsContext.saveGraphicsState()
+            try:
+                NSGraphicsContext.setCurrentContext_(
+                        NSGraphicsContext.graphicsContextWithGraphicsPort_flipped_(bitmapContext, False))
+                # self.drawInRect_fromRect_operation_fraction_(NSMakeRect(0, 0, rect[1][0], rect[1][1]),
+                #                                              NSZeroRect,
+                #                                              NSCompositeCopy,
+                #                                              1.0)
+                self.drawInRect_(NSMakeRect(0, 0, rect[1][0], rect[1][1]))
+            finally:
+                NSGraphicsContext.restoreGraphicsState()
+
+            cgImage = Quartz.CGBitmapContextCreateImage(bitmapContext)
+            return cgImage

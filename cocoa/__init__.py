@@ -308,7 +308,6 @@ def PoolManager(pool):
     yield
     del pool
 
-
 class NSView(objc.Category(NSView)):
     def convertRectToWindow_(self, rect):
         superview = self.superview()
@@ -368,7 +367,14 @@ try:
             deviceColor = self.colorUsingColorSpaceName_(NSDeviceRGBColorSpace)
             return CGColorCreate(CGColorSpaceCreateDeviceRGB(), 
                                  deviceColor.getRed_green_blue_alpha_(None, None, None, None))
-            
+    
+    @contextmanager
+    def savedCGContext(context):
+        CGContextSaveGState(context)
+        yield
+        CGContextRestoreGState(context)
+
+
 except ImportError:
     pass
 
