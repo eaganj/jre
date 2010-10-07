@@ -109,7 +109,7 @@ except ImportError:
             self._strokeColor = color
             self.setNeedsDisplay()
         
-        def display(self):
+        def _disabled_for_debugging_display(self):
             image = NSImage.alloc().initWithSize_(self.frame().size)
             image.lockFocus()
             try:
@@ -143,7 +143,7 @@ except ImportError:
             self.setContents_(image)
             del image
             
-        def drawInContext2_(self, context):
+        def _disabled_for_debugging_drawInContext_(self, context):
             super(CAShapeLayer, self).drawInContext_(context)
             if not self._path:
                 print "No path!"
