@@ -13,11 +13,13 @@ class JREPrefs(object):
     
     _sharedInstance = None
 
-    def __init__(self, defaults=None):
+    def __init__(self, defaults=None, defaultsDict=None):
         if defaults is None:
             self._defaults = NSUserDefaults.standardUserDefaults()
-            # FIXME: hard-coding
-            self._defaults.registerDefaults_(self._defaultPrefs)
+            if hasattr(self, '_defaultPrefs'):
+                self._defaults.registerDefaults_(self._defaultPrefs)
+            elif defaultsDict:
+                self._defaults.registerDefaults_(defaultsDict)
         else: 
             self._defaults = defaults
 
