@@ -61,8 +61,10 @@ def NOT_IMPLEMENTED(message='This feature is not currently implemented.', howFar
     message = '%s at:\n%s' % (message, TRACE_STR(howFarBack+1).strip())
     print message
 
-def DEPRECATED(message=u"DeprecationWarning", howFarBack=0):
+def DEPRECATED(message=u"DeprecationWarning", howFarBack=0, calledFrom=True):
     NOT_IMPLEMENTED(message, howFarBack=howFarBack+1)
+    if calledFrom:
+        NOT_IMPLEMENTED(u'called', howFarBack=howFarBack+2)
 
 
 # Trap exceptions functions are intended to be used as decorators to prevent exceptions

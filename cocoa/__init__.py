@@ -325,7 +325,11 @@ def PoolManager(pool):
 class NSView(objc.Category(NSView)):
     def convertRectToWindow_(self, rect):
         superview = self.superview()
-        return superview.convertRectToBase_(rect) if superview else self.convertRectToBase_(rect)
+        # return superview.convertRectToBase_(rect) if superview else self.convertRectToBase_(rect)
+        window = self.window()
+        if not window:
+            return None
+        return window.contentView().convertRect_fromView_(self.frame(), self.superview())
 
 class NSEvent(objc.Category(NSEvent)):
     def locationInScreen(self):
